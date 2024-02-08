@@ -95,10 +95,10 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
       val mc = mcS.toIntOption.getOrElse(0)
       contributorsByOrganization(organization, gl, mc).map(l => Response.json(l.toJson))
     }).handleError(_ match {
-    case LimitExceeded => Response.forbidden("GitHub API rate limit exceeded")
-    case OrganizationNotFound => Response.notFound("Non-existent organization")
-    case UnexpectedError => Response.badRequest("GitHub API unexpected StatusCode")
-  }
+      case LimitExceeded => Response.forbidden("GitHub API rate limit exceeded")
+      case OrganizationNotFound => Response.notFound("Non-existent organization")
+      case UnexpectedError => Response.badRequest("GitHub API unexpected StatusCode")
+    }
   ).toHttpApp
 
   // ZIO-Http definition of the server for the REST service

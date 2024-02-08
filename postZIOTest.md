@@ -728,7 +728,7 @@ object ContributorsByOrganizationTestEnvSpec extends ZIOSpecDefault {
         }
       ).provideShared(testEnv)
 
-  ) @@ TestAspect.sequential
+    ) @@ TestAspect.sequential
 }
 ```
 This spec is provided with a test environment `testEnv`, that differs from the live environment `liveEnv`, provided to 
