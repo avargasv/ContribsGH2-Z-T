@@ -87,19 +87,23 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
   }
 
   // ZIO-Http definition of the endpoint for the REST service
-  private val contribsGH2ZApp = Routes(
-    Method.GET / "org" / string("organization") / "contributors" -> handler { (organization: String, req: Request) =>
-      val glS = req.url.queryParams.get("group-level").getOrElse(Chunk[String]()).toString
+  private val contribsGH2ZHandler =
+    handler { (organization: String, request: Request) =>
+      val glS = request.url.queryParams.get("group-level").getOrElse(Chunk[String]()).toString
       val gl = if (glS.trim == "") "organization" else glS
-      val mcS = req.url.queryParams.get("min-contribs").getOrElse(Chunk[String]()).toString
+      val mcS = request.url.queryParams.get("min-contribs").getOrElse(Chunk[String]()).toString
       val mc = mcS.toIntOption.getOrElse(0)
       contributorsByOrganization(organization, gl, mc).map(l => Response.json(l.toJson))
-    }).handleError(_ match {
-      case LimitExceeded => Response.forbidden("GitHub API rate limit exceeded")
-      case OrganizationNotFound => Response.notFound("Non-existent organization")
-      case UnexpectedError => Response.badRequest("GitHub API unexpected StatusCode")
     }
-  ).toHttpApp
+
+  private val contribsGH2ZApp =
+    Routes(
+      Method.GET / "org" / string("organization") / "contributors" -> contribsGH2ZHandler
+    ).handleError(_ match {
+        case LimitExceeded => Response.forbidden("GitHub API rate limit exceeded")
+        case OrganizationNotFound => Response.notFound("Non-existent organization")
+        case UnexpectedError => Response.badRequest("GitHub API unexpected StatusCode")
+    }).toHttpApp
 
   // ZIO-Http definition of the server for the REST service
   private val port: Int = 8080

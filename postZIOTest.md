@@ -162,7 +162,7 @@ A modular application composed of several layers can be tested using a `provide`
 identical to that available outside the test environment, which allows the replacement of an application layer 
 with another deliberately developed with a specific test in mind.
 
-ZIO test supports property-based testing. For that purpose, it provides: i) predefined data generators for the 
+ZIO Test supports property-based testing. For that purpose, it provides: i) predefined data generators for the 
 standard data types, ii) functions to compose generators that allow to easily build data generators for user-defined 
 types, and iii) a `check` function, that takes as arguments a certain number of generators, and a property checking 
 function used to apply to the generated values an assertion expressing the property of interest.
@@ -461,20 +461,28 @@ In a similar way, the pseudo-contributor “Other contributors” must be used t
 the value of the “min-contribs” parameter (within each repository or within the entire organization, depending
 on the value of the “group-level” parameter).
 
-The implementation of the described REST service uses a REDIS cache to speed up the response to a request for an 
-organization whose contributors were previously requested.
+The implementation of the described REST service uses ZIO HTTP, a library for building HTTP servers and clients in a
+purely functional way using ZIO's functional effects, and a REDIS cache, used to speed up the response to a request 
+for an organization whose contributors were previously requested.
 
 As already said, the modular structure of a ZIO application is defined in terms of `ZLayer`s, which consist of
 traits that specify the services they provide and the resources they need, and "live" objects that extend those 
 traits providing the logic needed to implement the services and also, if necessary, the logic to safely manage 
 the corresponding resources.
 
-Our app is composed by four `ZLayer`s each one associated to a trait that specifies the services they provide:
-`RestCLient`, `RestServer`, `RestServerCache` and `RedisServerClient`. The `RestCLient` layer implements the access 
-to the GitHub REST API, used to get the data needed to build the response to a given request, a task that is 
-performed by the `RestServer` layer. The `RestServerCache` layer is responsible for managing the REDIS cache where 
-the contributions by repository of previously requested organizations are saved. Finally, the `RedisServerClient` 
-layer manages the embedded REDIS server and the REDIS client used by the `RestServerCache` layer.
+Our ZIO app is composed by four `ZLayer`s: `RestCLient`, `RestServer`, `RestServerCache` and `RedisServerClient`. 
+
+The `RestCLient` layer uses ZIO HTTP for implementing the access to the GitHub REST API, in order to get the data 
+needed to build the response to a given request. 
+
+The logic for building a response is implemented by the `RestServer` layer, which also associates that logic to 
+the endpoint serving a request to our service, all again using ZIO HTTP.
+
+The `RestServerCache` layer is responsible for managing the REDIS cache where the contributions by repository of 
+previously requested organizations are saved.
+
+Finally, the `RedisServerClient` layer manages the embedded REDIS server and the REDIS client used by the 
+`RestServerCache` layer.
 
 The `RedisServerClient` layer is based on two Java libraries, EmbeddedRedis and Jedis, deliberately included to show 
 how easily Scala allows to take advantage of the huge amount of functionality available in the Java ecosystem.
@@ -516,7 +524,7 @@ trait RestServer {
 }
 ```
 Where:
-- `runServer` is the function, required by ZIO-Http, used to map the REST endpoints to the logic that implements them.
+- `runServer` is the function, required by ZIO HTTP, used to map the REST endpoints to the logic that implements them.
 - `contributorsByOrganization` and `groupContributors` are the functions that in our case implement that logic, and 
 therefore are the functions that our testing efforts should focus on.
 
@@ -524,7 +532,7 @@ As the `RestServer` trait shows, `groupContributors` is a function that returns 
 a pure function used, as it name suggests, to group by repository the contributions of a given organization. It is 
 used as an auxiliary function by `contributorsByOrganization`, which is the effectual function that actually 
 implements our endpoint by building, as a deferred effect, the `List[Contributor]` that will be transformed by 
-ZIO-Http into the desired Http response.
+ZIO HTTP into the desired HTTP response.
 
 ## 4.1 Testing a pure function.
 
@@ -623,7 +631,7 @@ with the following result displayed by ZIO Test at the console:
 
 Our second specification is implemented by the `ContributorsByOrganizationLiveEnvSpec` object, whose code follows. 
 It shows the testing of the effectual function `contributorsByOrganization` using the live environment, composed by 
-all the `ZLayer`s used by our ZIO-Http application itself. 
+all the `ZLayer`s used by our ZIO HTTP application itself. 
 ```scala
 object ContributorsByOrganizationLiveEnvSpec extends ZIOSpecDefault {
 
@@ -659,7 +667,7 @@ object ContributorsByOrganizationLiveEnvSpec extends ZIOSpecDefault {
 ```
 As we can see by the successful execution of this specification, our endpoint:
 - Responds to a request for a non-existent organization with an error that belongs to the `ErrorType` enumeration 
-that defines the custom error model of our ZIO-Http application. The interested reader can see the details of this 
+that defines the custom error model of our ZIO HTTP application. The interested reader can see the details of this 
 error model, and its use to feed the error-channel of the functional effects involved, in the source code of this 
 article at the GitHub repository referenced in Section 5.
 - Responds properly to a request for the organization "revelation", with request parameters that guarantee the grouping 
@@ -797,7 +805,7 @@ still worth watching [here](https://www.youtube.com/watch?v=qDFfVinjDPQ).
 - Jorge Vasquez' article about STM, which contains an example of testing a concurrent program using multiple threads, 
 can be found [here](https://medium.com/scalac/how-to-write-a-completely-lock-free-concurrent-lru-cache-with-zio-stm-c78c75b54771). 
 The text is also a little outdated, but the Scala code has been updated to ZIO 2.
-- The first part of a [ZIO-Http tutorial](https://scalac.io/blog/getting-started-with-zio-http/) by Jakub Czuchnowski, 
+- The first part of a [ZIO HTTP tutorial](https://scalac.io/blog/getting-started-with-zio-http/) by Jakub Czuchnowski, 
 presents nice examples of error handling using the ZIO error chanel with types defined in a custom error model.
 - The [official documentation](https://zio.dev/reference/test/) of ZIO Test.
 
