@@ -475,8 +475,8 @@ Our ZIO app is composed by four `ZLayer`s: `RestCLient`, `RestServer`, `RestServ
 The `RestCLient` layer uses ZIO HTTP for implementing the access to the GitHub REST API, in order to get the data 
 needed to build the response to a given request. 
 
-The logic for building a response is implemented by the `RestServer` layer, which also associates that logic to 
-the endpoint serving a request to our service, all again using ZIO HTTP.
+The logic for building a response is managed by the `RestServer` layer, which also associates that logic to 
+the endpoint serving a request to our service. These two functions are again implemented using ZIO HTTP.
 
 The `RestServerCache` layer is responsible for managing the REDIS cache where the contributions by repository of 
 previously requested organizations are saved.
