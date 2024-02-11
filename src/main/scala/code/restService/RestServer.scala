@@ -86,8 +86,8 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
     contributorsGrouped
   }
 
-  // ZIO-Http definition of the endpoint for the REST service
-  private val contribsGH2ZHandler =
+  // ZIO-HTTP definition of the endpoint for the REST service
+  private val contribsGH2ZHandler: Handler[Client, ErrorType, (String, Request), Response] =
     handler { (organization: String, request: Request) =>
       val glS = request.url.queryParams.get("group-level").getOrElse(Chunk[String]()).toString
       val gl = if (glS.trim == "") "organization" else glS
@@ -95,19 +95,18 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
       val mc = mcS.toIntOption.getOrElse(0)
       contributorsByOrganization(organization, gl, mc).map(l => Response.json(l.toJson))
     }
+  private val contribsGH2ZRoutes: Routes[Client, ErrorType] =
+    Routes(Method.GET / "org" / string("organization") / "contributors" -> contribsGH2ZHandler)
+  private val contribsGH2ZRoutesErrorsHandled: Routes[Client, Nothing] =
+    contribsGH2ZRoutes.handleError(_ match {
+      case LimitExceeded => Response.forbidden("GitHub API rate limit exceeded")
+      case OrganizationNotFound => Response.notFound("Non-existent organization")
+      case UnexpectedError => Response.badRequest("GitHub API unexpected StatusCode")
+    })
+  private val contribsGH2ZApp: HttpApp[Client] = contribsGH2ZRoutesErrorsHandled.toHttpApp
 
-  private val contribsGH2ZApp =
-    Routes(
-      Method.GET / "org" / string("organization") / "contributors" -> contribsGH2ZHandler
-    ).handleError(_ match {
-        case LimitExceeded => Response.forbidden("GitHub API rate limit exceeded")
-        case OrganizationNotFound => Response.notFound("Non-existent organization")
-        case UnexpectedError => Response.badRequest("GitHub API unexpected StatusCode")
-    }).toHttpApp
-
-  // ZIO-Http definition of the server for the REST service
+  // ZIO-HTTP definition of the server for the REST service
   private val port: Int = 8080
-
   val runServer: ZIO[Any, Throwable, ExitCode] = for {
     _ <- Console.printLine(s"Starting server on http://0.0.0.0:$port")
     _ <- Server.serve(contribsGH2ZApp).provide(Server.defaultWithPort(port), Client.default)
