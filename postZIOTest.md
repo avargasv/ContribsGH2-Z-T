@@ -386,7 +386,7 @@ Counter message - initialized!
 Counter message - number of tests executed: 3
 ```
 The attentive reader may have noticed that the message for test2 appears in the output before the message for test1, 
-notwithstanding the fact that test1 precedes test2 in the test definition. This happens because this time we didn't 
+notwithstanding the fact that test1 precedes test2 in the test definition. This happened because this time we didn't 
 apply the `sequential` aspect to our spec.
 
 In the Counter example, the provided layer was acquired and released only once because it was shared between all 
