@@ -63,10 +63,10 @@ final case class RestClientLive() extends RestClient {
       status match {
         case Status.Ok =>
           Right(body)
-        case Status.Forbidden =>
-          Left(LimitExceeded) // GitHub API rate limit exceeded
         case Status.NotFound =>
           Left(OrganizationNotFound) // Non-existent organization
+        case Status.Forbidden =>
+          Left(LimitExceeded) // GitHub API rate limit exceeded
         case _ =>
           Left(UnexpectedError) // GitHub API unexpected StatusCode
       }

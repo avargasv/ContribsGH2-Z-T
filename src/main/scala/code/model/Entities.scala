@@ -24,7 +24,7 @@ object Entities {
 
   object ErrorTypes extends Enumeration {
     type ErrorType = Value
-    val LimitExceeded, OrganizationNotFound, UnexpectedError = Value
+    val OrganizationNotFound, LimitExceeded, UnexpectedError = Value
   }
 
 }
