@@ -94,7 +94,6 @@ object ContributorsByOrganizationTestEnvSpec extends ZIOSpecDefault {
     ) @@ TestAspect.sequential
 }
 
-
 object ContributorsByOrganizationLiveEnvSpec extends ZIOSpecDefault {
 
   val liveEnv = ZLayer.make[RestServer with zio.http.Client](
