@@ -23,7 +23,7 @@ object Entities {
   type BodyType = String
 
   object ErrorTypes extends Enumeration {
-    type ErrorType = Value
+    type ErrorTypeE = Value
     val OrganizationNotFound, LimitExceeded, UnexpectedError = Value
   }
 

@@ -11,13 +11,13 @@ import java.time.Instant
 // RestClient layer
 // retrieves repos by organization and contributors by repo by making calls to the GITHub REST service
 trait RestClient {
-  def reposByOrganization(organization: Organization): ZIO[Client, ErrorType, List[Repository]]
-  def contributorsByRepo(organization: Organization, repo: Repository): ZIO[Client, ErrorType, List[Contributor]]
+  def reposByOrganization(organization: Organization): ZIO[Client, ErrorTypeE, List[Repository]]
+  def contributorsByRepo(organization: Organization, repo: Repository): ZIO[Client, ErrorTypeE, List[Contributor]]
 }
 
 final case class RestClientLive() extends RestClient {
 
-  def reposByOrganization(organization: Organization): ZIO[Client, ErrorType, List[Repository]] = {
+  def reposByOrganization(organization: Organization): ZIO[Client, ErrorTypeE, List[Repository]] = {
     val resp = processResponseBody(s"https://api.github.com/orgs/$organization/repos") { responsePage =>
       val full_name_RE = s""","full_name":"$organization/([^"]+)",""".r
       val full_name_I = for (full_name_RE(full_name) <- full_name_RE.findAllIn(responsePage)) yield full_name
@@ -28,7 +28,7 @@ final case class RestClientLive() extends RestClient {
     resp
   }
 
-  def contributorsByRepo(organization: Organization, repo: Repository): ZIO[Client, ErrorType, List[Contributor]] = {
+  def contributorsByRepo(organization: Organization, repo: Repository): ZIO[Client, ErrorTypeE, List[Contributor]] = {
     val resp = processResponseBody(s"https://api.github.com/repos/$organization/${repo.name}/contributors") { responsePage =>
       val login_RE = """"login":"([^"]+)"""".r
       val login_I = for (login_RE(login) <- login_RE.findAllIn(responsePage)) yield login
@@ -40,9 +40,9 @@ final case class RestClientLive() extends RestClient {
     resp
   }
 
-  private def processResponseBody[T](url: String)(processPage: BodyType => List[T]): ZIO[Client, ErrorType, List[T]] = {
+  private def processResponseBody[T](url: String)(processPage: BodyType => List[T]): ZIO[Client, ErrorTypeE, List[T]] = {
 
-    def processResponsePage(processedPages: List[T], pageNumber: Int): ZIO[Client, ErrorType, List[T]] = {
+    def processResponsePage(processedPages: List[T], pageNumber: Int): ZIO[Client, ErrorTypeE, List[T]] = {
       getResponseBody(s"$url?page=$pageNumber&per_page=100").flatMap {
         case Right(pageBody) if pageBody.length > 2 =>
           val processedPage = processPage(pageBody)
@@ -57,9 +57,9 @@ final case class RestClientLive() extends RestClient {
     processResponsePage(List.empty[T], 1)
   }
 
-  private def getResponseBody(urlS: String): ZIO[Any, Nothing, Either[ErrorType, BodyType]] = {
+  private def getResponseBody(urlS: String): ZIO[Any, Nothing, Either[ErrorTypeE, BodyType]] = {
 
-    def responseBody(body: BodyType, status: Status): Either[ErrorType, BodyType] =
+    def responseBody(body: BodyType, status: Status): Either[ErrorTypeE, BodyType] =
       status match {
         case Status.Ok =>
           Right(body)

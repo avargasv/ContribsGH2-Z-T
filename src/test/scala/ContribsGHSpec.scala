@@ -108,10 +108,10 @@ object ContributorsByOrganizationLiveEnvSpec extends ZIOSpecDefault {
     suite("RestServer.contributorsByOrganization") (
 
       suite("With live environment") (
-        test("For organization 'xxx' fails with an ErrorType error") {
+        test("For organization 'xxx' fails with an ErrorTypeE error") {
           assertZIO(
             RestServer.contributorsByOrganization("xxx", "organization", 1000).exit
-          )(fails(isSubtype[ErrorType](anything)))
+          )(fails(isSubtype[ErrorTypeE](anything)))
         },
         test("For organization 'revelation' returns List(Contributor(All revelation repos, Other contributors, ???))") {
           for {

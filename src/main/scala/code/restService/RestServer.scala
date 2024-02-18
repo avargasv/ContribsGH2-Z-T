@@ -12,7 +12,7 @@ import code.model.Entities.ErrorTypes._
 trait RestServer {
   val runServer: ZIO[Any, Throwable, ExitCode]
   def contributorsByOrganization(organization: Organization, groupLevel: String, minContribs: Int):
-  ZIO[Client, ErrorType, List[Contributor]]
+  ZIO[Client, ErrorTypeE, List[Contributor]]
   def groupContributors(organization: Organization,
                         groupLevel: String,
                         minContribs: Int,
@@ -26,14 +26,14 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
 
   // retrieve contributors by repo using ZIO-http and a Redis cache
   def contributorsByOrganization(organization: Organization, groupLevel: String, minContribs: Int):
-  ZIO[Client, ErrorType, List[Contributor]] = for {
+  ZIO[Client, ErrorTypeE, List[Contributor]] = for {
     repos <- restClient.reposByOrganization(organization)
     contributorsDetailed <- contributorsDetailedZIOWithCache(organization, repos)
     contributors = groupContributors(organization, groupLevel, minContribs, contributorsDetailed)
   } yield contributors
 
   private def contributorsDetailedZIOWithCache(organization: Organization, repos: List[Repository]):
-  ZIO[Client, ErrorType, List[Contributor]] = {
+  ZIO[Client, ErrorTypeE, List[Contributor]] = {
 
     val (reposUpdatedInCache, reposNotUpdatedInCache) = repos.partition(restServerCache.repoUpdatedInCache(organization, _))
     val contributorsDetailed_L_1: List[List[Contributor]] =
@@ -87,7 +87,7 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
   }
 
   // ZIO-HTTP definition of the endpoint for the REST service
-  private val contribsGH2ZHandler: Handler[Client, ErrorType, (String, Request), Response] =
+  private val handlerContribsGH2Z: Handler[Client, ErrorTypeE, (String, Request), Response] =
     handler { (organization: String, request: Request) =>
       val glS = request.url.queryParams.get("group-level").getOrElse(Chunk[String]()).toString
       val gl = if (glS.trim == "") "organization" else glS
@@ -95,21 +95,21 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
       val mc = mcS.toIntOption.getOrElse(0)
       contributorsByOrganization(organization, gl, mc).map(l => Response.json(l.toJson))
     }
-  private val contribsGH2ZRoutes: Routes[Client, ErrorType] =
-    Routes(Method.GET / "org" / string("organization") / "contributors" -> contribsGH2ZHandler)
-  private val contribsGH2ZRoutesErrorsHandled: Routes[Client, Nothing] =
-    contribsGH2ZRoutes.handleError(_ match {
+  private val routesContribsGH2Z: Routes[Client, ErrorTypeE] =
+    Routes(Method.GET / "org" / string("organization") / "contributors" -> handlerContribsGH2Z)
+  private val routesContribsGH2ZErrorsHandled: Routes[Client, Nothing] =
+    routesContribsGH2Z.handleError(_ match {
       case OrganizationNotFound => Response.notFound("Non-existent organization")
       case LimitExceeded => Response.forbidden("GitHub API rate limit exceeded")
       case UnexpectedError => Response.internalServerError("GitHub API unexpected StatusCode")
     })
-  private val contribsGH2ZApp: HttpApp[Client] = contribsGH2ZRoutesErrorsHandled.toHttpApp
+  private val appContribsGH2Z: HttpApp[Client] = routesContribsGH2ZErrorsHandled.toHttpApp
 
   // ZIO-HTTP definition of the server for the REST service
   private val port: Int = 8080
   val runServer: ZIO[Any, Throwable, ExitCode] = for {
     _ <- Console.printLine(s"Starting server on http://0.0.0.0:$port")
-    _ <- Server.serve(contribsGH2ZApp).provide(Server.defaultWithPort(port), Client.default)
+    _ <- Server.serve(appContribsGH2Z).provide(Server.defaultWithPort(port), Client.default)
   } yield ExitCode.success
 
 }
