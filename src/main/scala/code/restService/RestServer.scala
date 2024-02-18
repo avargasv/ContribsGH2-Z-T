@@ -99,9 +99,9 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
     Routes(Method.GET / "org" / string("organization") / "contributors" -> handlerContribsGH2Z)
   private val routesContribsGH2ZErrorsHandled: Routes[Client, Nothing] =
     routesContribsGH2Z.handleError(_ match {
-      case OrganizationNotFound => Response.notFound("Non-existent organization")
-      case LimitExceeded => Response.forbidden("GitHub API rate limit exceeded")
-      case UnexpectedError => Response.internalServerError("GitHub API unexpected StatusCode")
+      case OrganizationNotFound => Response.notFound("GitHub API - non-existent organization")
+      case LimitExceeded => Response.forbidden("GitHub API - rate limit exceeded")
+      case UnexpectedError => Response.internalServerError("GitHub API - unexpected StatusCode")
     })
   private val appContribsGH2Z: HttpApp[Client] = routesContribsGH2ZErrorsHandled.toHttpApp
 
