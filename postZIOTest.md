@@ -36,9 +36,6 @@ can be extremely helpful. So much so, that writing tests as a translation of a s
 considered the best first step of the software development process, as claimed by test-driven development
  [TDD](https://en.wikipedia.org/wiki/Test-driven_development).
 
-The previous observations should then allow us to respond positively, in practical terms, to the question that heads 
-this article, simply adding a clarification: yes, we can get rid of errors using ZIO Test **and** ZIO together.
-
 Besides, software testing has become a field in itself and developed concepts and technologies of great value 
 for the exercise of software engineering. One of the most relevant in our opinion, property-based testing, uses 
 test cases not devised "by hand" but generated automatically in a random manner; a technique that, with properly 
@@ -795,8 +792,8 @@ Make good use of the highly customizable error handling functionality provided b
 more related to development than testing, it is presented here due to its close relationship with the topic of errors. 
 You can see it applied to our case, as said before, by examining the source code.
 
-Remember the moral of this article: we cannot avoid errors, but we can get rid of them with the help of ZIO and ZIO 
-Test together. The power and simplicity of the functional programming paradigm are essential for achieving this 
+So, the moral of this article would be: we cannot avoid errors, but we can get rid of them with the help of ZIO and 
+ZIO Test together. The power and simplicity of the functional programming paradigm are essential for achieving this 
 difficult goal.
 
 References:
