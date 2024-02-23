@@ -780,7 +780,7 @@ The results of executing this last test spec from the shell using sbt are the fo
 
 ## 5. Conclusion. Recommendations and references.
 
-We conclude with a handful of briefly stated recommendations that we hope can be considered well supported by the 
+We conclude with a handful of briefly stated recommendations that we hope can be considered well-supported by the 
 discussion and examples presented in the previous sections.
 
 Use ZIO Test for testing ZIO applications, taking advantage from tests as first class values, simple and powerful 
@@ -792,9 +792,9 @@ Make good use of the highly customizable error handling functionality provided b
 more related to development than testing, it is presented here due to its close relationship with the topic of errors. 
 You can see it applied to our case, as said before, by examining the source code.
 
-So, the moral of this article would be: we cannot avoid errors, but we can get rid of them with the help of ZIO and 
-ZIO Test together. The power and simplicity of the functional programming paradigm are essential for achieving this 
-difficult goal.
+As a final conclusion, the answer to the question posed at the beginning of this article would be: we cannot avoid 
+errors, but we can get rid of them with the help of ZIO and ZIO Test together. The power and simplicity of the
+functional programming paradigm are essential for achieving this difficult goal.
 
 References:
 - A slightly outdated presentation of ZIO Test by Adam Fraser, where most inspiration for this article was found, is 
