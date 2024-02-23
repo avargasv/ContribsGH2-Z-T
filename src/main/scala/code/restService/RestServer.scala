@@ -4,6 +4,7 @@ import zio._
 import zio.json._
 import zio.macros._
 import zio.http._
+
 import code.model.Entities._
 import code.model.Entities.ErrorTypes._
 
@@ -16,8 +17,7 @@ trait RestServer {
   def groupContributors(organization: Organization,
                         groupLevel: String,
                         minContribs: Int,
-                        contributorsDetailed: List[Contributor]):
-  List[Contributor]
+                        contributorsDetailed: List[Contributor]): List[Contributor]
 }
 
 final case class RestServerLive(restClient: RestClient, restServerCache: RestServerCache) extends RestServer {
@@ -33,7 +33,7 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
   } yield contributors
 
   private def contributorsDetailedZIOWithCache(organization: Organization, repos: List[Repository]):
-  ZIO[Client, ErrorTypeE, List[Contributor]] = {
+    ZIO[Client, ErrorTypeE, List[Contributor]] = {
 
     val (reposUpdatedInCache, reposNotUpdatedInCache) = repos.partition(restServerCache.repoUpdatedInCache(organization, _))
     val contributorsDetailed_L_1: List[List[Contributor]] =

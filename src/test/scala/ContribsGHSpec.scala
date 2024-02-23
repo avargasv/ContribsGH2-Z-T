@@ -27,6 +27,7 @@ object GroupContributorsSpec extends ZIOSpecDefault {
   def spec =
 
     suite("RestServer.groupContributors") (
+
       test("Total contributions equals expected total") {
         check(contributionListGen) { contributionList =>
           for {
