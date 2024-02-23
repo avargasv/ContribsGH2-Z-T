@@ -103,7 +103,7 @@ final case class RestServerLive(restClient: RestClient, restServerCache: RestSer
       case LimitExceeded => Response.forbidden("GitHub API - rate limit exceeded")
       case UnexpectedError => Response.internalServerError("GitHub API - unexpected StatusCode")
     })
-  private val appContribsGH2Z: HttpApp[Client] = routesContribsGH2ZErrorsHandled.toHttpApp
+  private val appContribsGH2Z: HttpApp[Client] = routesContribsGH2ZErrorsHandled.sandbox.toHttpApp
 
   // ZIO-HTTP definition of the server for the REST service
   private val port: Int = 8080
