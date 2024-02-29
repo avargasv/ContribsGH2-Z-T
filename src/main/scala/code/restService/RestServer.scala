@@ -22,8 +22,6 @@ trait RestServer {
 
 final case class RestServerLive(restClient: RestClient, restServerCache: RestServerCache) extends RestServer {
 
-  private val sdf = new java.text.SimpleDateFormat("dd-MM-yyyy hh:mm:ss")
-
   // retrieve contributors by repo using ZIO-http and a Redis cache
   def contributorsByOrganization(organization: Organization, groupLevel: String, minContribs: Int):
   ZIO[Client, ErrorTypeE, List[Contributor]] = for {
